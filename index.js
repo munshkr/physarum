@@ -10,6 +10,7 @@ import {
     PlaneBufferGeometry,
     ShaderMaterial,
     Vector2,
+    Vector3,
 } from 'three';
 import PingpongRenderTarget from "./src/PingpongRenderTarget"
 import RenderTarget from "./src/RenderTarget"
@@ -116,9 +117,9 @@ let render = new RenderTarget(w,h,render_agents, pos, uvs)
 //post process the result of the trails (render the trails as greyscale)
 let postprocess = new ShaderMaterial({
     uniforms: {
-        data: {
-            value: null
-        }
+        data: { value: null },
+        time: { value: null },
+        resolution: { value: new Vector3() }
     },
     vertexShader: require('./src/glsl/quad_vs.glsl'),
     fragmentShader: require('./src/glsl/postprocess_fs.glsl')
@@ -151,7 +152,10 @@ function raf(){
     
     render.render( renderer, time )
     
-    postprocess_mesh.material.uniforms.data.value = trails.texture
+    postprocess_mesh.material.uniforms.data.value = trails.texture;
+    postprocess_mesh.material.uniforms.time.value = time;
+    postprocess_mesh.material.uniforms.resolution.value.set(w, h, 1);
+
     renderer.setSize(w,h)
     renderer.clear()
     renderer.render(scene, camera)

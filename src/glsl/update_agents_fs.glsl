@@ -36,8 +36,8 @@ void main(){
 
     //downscales the parameters (should be done on the CPU)
     vec2 res = 1. / resolution;//data trail scale
-    vec2 SO = so * res;
-    vec2 SS = ss * res;
+    vec2 SO = abs(sin(time/8.)) * so * res;
+    vec2 SS = abs(sin(time/4.)) * ss * res;
 
     //uv = input_texture.xy
     //where to sample in the data trail texture to get the agent's world position
@@ -45,6 +45,7 @@ void main(){
     vec4 val = src;
     
     //agent's heading 
+    // float angle = (sin(time*2.)+1./2.) * val.z * PI2;
     float angle = val.z * PI2;
 
     // compute the sensors positions 
@@ -62,24 +63,24 @@ void main(){
     if( F > FL && F > FR ){
     }else if( F<FL && F<FR ){
         if( rand(val.xy) > .5 ){
-            angle +=RA;
+            angle +=tan(RA);
         }else{
-            angle -=RA;
+            angle -=tan(RA);
         }
     }else if( FL<FR){
-            angle+=RA;
+            angle+=tan(RA);
     }else if(FL>FR){
-            angle-=RA;
+            angle-=tan(RA);
     }
 
     vec2 offset = vec2(cos(angle),sin(angle)) * SS;
     val.xy += offset;
 
     //condition from the paper : move only if the destination is free
-    // if( getDataValue(val.xy) == 1. ){
-    //     val.xy = src.xy;
-    //     angle = rand(val.xy+time) * PI2;
-    // }
+    if( getDataValue(val.xy) == 1. ){
+        val.xy = src.xy;
+        angle = rand(val.xy+time) * PI2;
+    }
 
     //warps the coordinates so they remains in the [0-1] interval
     val.xy = fract( val.xy );
